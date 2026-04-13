@@ -1,0 +1,131 @@
+import java.util.*;
+import java.text.SimpleDateFormat;
+
+class ATM {
+    private double balance = 10000;
+    private int pin = 1234;
+    private int attempts = 0;
+    private double dailyLimit = 5000;
+    private double withdrawnToday = 0;
+
+    private List<String> miniStatement = new ArrayList<>();
+    private Scanner sc = new Scanner(System.in);
+
+    public void start() {
+        if (!authenticate()) return;
+
+        int choice;
+        do {
+            System.out.println("\n====== SMART ATM SYSTEM ======");
+            System.out.println("1. Check Balance");
+            System.out.println("2. Deposit");
+            System.out.println("3. Withdraw");
+            System.out.println("4. Mini Statement");
+            System.out.println("5. Change PIN");
+            System.out.println("6. Exit");
+            System.out.print("Enter choice: ");
+            choice = sc.nextInt();
+
+            switch (choice) {
+                case 1: checkBalance(); break;
+                case 2: deposit(); break;
+                case 3: withdraw(); break;
+                case 4: showMiniStatement(); break;
+                case 5: changePin(); break;
+                case 6: System.out.println("Thank you! 😊"); break;
+                default: System.out.println("Invalid choice!");
+            }
+        } while (choice != 6);
+    }
+
+    private boolean authenticate() {
+        while (attempts < 3) {
+            System.out.print("Enter PIN: ");
+            int enteredPin = sc.nextInt();
+
+            if (enteredPin == pin) {
+                System.out.println("Login successful ✅");
+                return true;
+            } else {
+                attempts++;
+                System.out.println("Wrong PIN! Attempts left: " + (3 - attempts));
+            }
+        }
+        System.out.println("Account locked 🚫");
+        return false;
+    }
+
+    private void checkBalance() {
+        System.out.println("Current Balance: ₹" + balance);
+    }
+
+    private void deposit() {
+        System.out.print("Enter amount: ");
+        double amount = sc.nextDouble();
+
+        if (amount <= 0) {
+            System.out.println("Invalid amount!");
+            return;
+        }
+
+        balance += amount;
+        addTransaction("Deposited ₹" + amount);
+        System.out.println("Deposit successful ✅");
+    }
+
+    private void withdraw() {
+        System.out.print("Enter amount: ");
+        double amount = sc.nextDouble();
+
+        if (amount <= 0) {
+            System.out.println("Invalid amount!");
+        } else if (amount > balance) {
+            System.out.println("Insufficient balance ❌");
+        } else if (withdrawnToday + amount > dailyLimit) {
+            System.out.println("Daily limit exceeded 🚫 (Limit: ₹5000)");
+        } else {
+            balance -= amount;
+            withdrawnToday += amount;
+            addTransaction("Withdrawn ₹" + amount);
+            System.out.println("Collect cash 💵");
+        }
+    }
+
+    private void changePin() {
+        System.out.print("Enter old PIN: ");
+        int oldPin = sc.nextInt();
+
+        if (oldPin == pin) {
+            System.out.print("Enter new PIN: ");
+            pin = sc.nextInt();
+            System.out.println("PIN changed successfully 🔐");
+        } else {
+            System.out.println("Wrong old PIN!");
+        }
+    }
+
+    private void showMiniStatement() {
+        System.out.println("\n--- MINI STATEMENT ---");
+        if (miniStatement.isEmpty()) {
+            System.out.println("No transactions yet.");
+        } else {
+            for (String t : miniStatement) {
+                System.out.println(t);
+            }
+        }
+    }
+
+    private void addTransaction(String type) {
+        String time = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss").format(new Date());
+        String txnId = "TXN" + new Random().nextInt(100000);
+
+        miniStatement.add(txnId + " | " + type + " | " + time);
+    }
+}
+
+public class ATMSystem {
+    public static void main(String[] args) {
+        ATM atm = new ATM();
+        atm.start();
+    }
+}
